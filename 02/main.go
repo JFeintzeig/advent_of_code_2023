@@ -52,7 +52,7 @@ func (g *Game) minSet() CubeSet {
 }
 
 func LoadFile(file string) *bufio.Scanner {
-    f, err := os.Open("input.data")
+    f, err := os.Open(file)
     if err != nil {
       panic("cant open file")
     }
@@ -98,7 +98,7 @@ func LineToGame(line string) Game {
 }
 
 func main() {
-  scanner := LoadFile("test1.data")
+  scanner := LoadFile("input.data")
 
   sumPossible := 0
   sumMinPower := 0
