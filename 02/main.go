@@ -16,9 +16,6 @@ const (
   MAX_BLUE = 14
 )
 
-const MAX_UINT = ^uint(0) 
-const MAX_INT = int(MAX_UINT >> 1) 
-
 type CubeSet struct {
   nRed int
   nGreen int
@@ -64,39 +61,37 @@ func LoadFile(file string) *bufio.Scanner {
     return scanner
 }
 
+func extractIntFromRegexp(str string, re *regexp2.Regexp) int {
+  n := 0
+  nStr, _ := re.FindStringMatch(str)
+  if nStr != nil {
+    n, _ = strconv.Atoi(nStr.String())
+  }
+  return n
+}
+
 func LineToGame(line string) Game {
   game := strings.Split(line, ":")[0]
   roundString := strings.Split(strings.Split(line, ":")[1], ";")
 
   gID, _ := regexp2.Compile("(?<=Game )\\d+", 0)
-  idStr, _ := gID.FindStringMatch(game)
-  id, _ := strconv.Atoi(idStr.String())
+  id := extractIntFromRegexp(game, gID)
 
-  red, _ := regexp2.Compile("\\d+(?= red)", 0)
-  green, _ := regexp2.Compile("\\d+(?= green)", 0)
-  blue, _ := regexp2.Compile("\\d+(?= blue)", 0)
+  colors := []string{"red", "green","blue"}
+  colorRE := map[string]*regexp2.Regexp{}
+  for _, col := range colors {
+    colorRE[col], _ = regexp2.Compile(fmt.Sprintf("\\d+(?= %s)", col), 0)
+  }
 
   var rounds []CubeSet
 
   for _, r := range roundString {
-    nRed, nGreen, nBlue := 0, 0, 0
-
-    nRedStr, _ := red.FindStringMatch(r)
-    if nRedStr != nil {
-      nRed, _ = strconv.Atoi(nRedStr.String())
+    colorCount := make(map[string]int)
+    for k, v := range colorRE {
+      colorCount[k] = extractIntFromRegexp(r, v)
     }
 
-    nGreenStr, _ := green.FindStringMatch(r)
-    if nGreenStr != nil {
-      nGreen, _ = strconv.Atoi(nGreenStr.String())
-    }
-
-    nBlueStr, _ := blue.FindStringMatch(r)
-    if nBlueStr != nil {
-      nBlue, _ = strconv.Atoi(nBlueStr.String())
-    }
-
-    rounds = append(rounds, CubeSet{nRed, nGreen, nBlue})
+    rounds = append(rounds, CubeSet{colorCount["red"], colorCount["green"], colorCount["blue"]})
   }
 
   return Game{id: id, rounds: rounds}
