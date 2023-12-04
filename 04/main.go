@@ -11,9 +11,11 @@ import (
 type set map[int]bool
 
 type Card struct {
-	num     int
-	winning set
-	mine    set
+	num           int
+	winning       set
+	mine          set
+	nOverlap      int
+	cachedOverlap bool
 }
 
 func (c *Card) FindOverlap() []int {
@@ -24,6 +26,8 @@ func (c *Card) FindOverlap() []int {
 			out = append(out, k)
 		}
 	}
+	c.nOverlap = len(out)
+	c.cachedOverlap = true
 	return out
 }
 
@@ -31,9 +35,12 @@ func EvalCard(cards map[int]*Card, nCards int, toEval []int) int {
 	var newToEval []int
 	for _, num := range toEval {
 		card := cards[num]
-		overlap := card.FindOverlap()
 
-		for i := 1; i <= len(overlap); i++ {
+		if !card.cachedOverlap {
+			card.FindOverlap()
+		}
+
+		for i := 1; i <= card.nOverlap; i++ {
 			newToEval = append(newToEval, card.num+i)
 		}
 	}
@@ -56,7 +63,7 @@ func StringToIntMap(str string) set {
 	return out
 }
 
-func CardTo2Sets(line string) (int, []set) {
+func ParseCard(line string) (int, []set) {
 	cardNum, _ := strconv.Atoi(strings.TrimSpace(strings.Replace(strings.Split(line, ":")[0], "Card", "", -1)))
 	pair := strings.Split(strings.Split(line, ":")[1], "|")
 	winning := StringToIntMap(pair[0])
@@ -78,10 +85,9 @@ func main() {
 	var answer1 int
 	cards := make(map[int]*Card)
 	for _, line := range lines {
-		cardNum, numSets := CardTo2Sets(line)
-		cards[cardNum] = &Card{cardNum, numSets[0], numSets[1]}
+		cardNum, numSets := ParseCard(line)
+		cards[cardNum] = &Card{num: cardNum, winning: numSets[0], mine: numSets[1]}
 		overlap := cards[cardNum].FindOverlap()
-		//fmt.Printf("%v\n", overlap)
 		if len(overlap) > 0 {
 			answer1 += 0x1 << (len(overlap) - 1)
 		}
