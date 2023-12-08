@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type ThingRange struct {
@@ -157,6 +158,7 @@ func main() {
 		fmt.Printf("%s %v\n\n\n", k, v)
 	}
 
+	start := time.Now()
 	seedRanges := ParseThingRanges(lines[0])
 	output2 := make(map[string][]*ThingRange, 0)
 	output2["seed"] = seedRanges
@@ -189,7 +191,7 @@ func main() {
 			for _, tr := range tm.transitions {
 				if tRange.low >= tr.low && tRange.high <= tr.high {
 					// complete overlap: full change
-					fmt.Printf("full overlap: %v %v\n", tRange, tr)
+					//fmt.Printf("full overlap: %v %v\n", tRange, tr)
 					out = append(out, &ThingRange{low: tRange.low + tr.offset, high: tRange.high + tr.offset})
 					tRange.low = -1
 					tRange.high = -1
@@ -197,14 +199,14 @@ func main() {
 				} else if tRange.high < tr.low {
 					// if thing range is entirely below low end of
 					// transformation then no change
-					fmt.Printf("below: %v %v\n", tRange, tr)
+					//fmt.Printf("below: %v %v\n", tRange, tr)
 				} else if tRange.low > tr.high {
 					// if thing range is entirely above high end of
 					// transformation then no change
-					fmt.Printf("above: %v %v\n", tRange, tr)
+					//fmt.Printf("above: %v %v\n", tRange, tr)
 				} else if tRange.low < tr.low && tRange.high >= tr.low {
 					// partial overlap low
-					fmt.Printf("partial overlap low: %v %v\n", tRange, tr)
+					//fmt.Printf("partial overlap low: %v %v\n", tRange, tr)
 					out = append(out, &ThingRange{low: tr.low + tr.offset, high: tRange.high + tr.offset})
 					tRange.high = tr.low - 1
 					if tRange.low == tRange.high {
@@ -214,7 +216,7 @@ func main() {
 					}
 				} else if tRange.low >= tr.low && tRange.high > tr.high {
 					// partial overlap high
-					fmt.Printf("partial overlap high: %v %v\n", tRange, tr)
+					//fmt.Printf("partial overlap high: %v %v\n", tRange, tr)
 					out = append(out, &ThingRange{low: tRange.low + tr.offset, high: tr.high + tr.offset - 1})
 					tRange.low = tr.high
 					if tRange.low == tRange.high {
@@ -229,27 +231,30 @@ func main() {
 			}
 		}
 		output2[tm.outputName] = out
-		fmt.Printf("%s: ", tm.outputName)
-		for _, val := range out {
-			fmt.Printf("%v ", *val)
-		}
-		fmt.Printf("\n")
+		//fmt.Printf("%s: ", tm.outputName)
+		//for _, val := range out {
+		//	fmt.Printf("%v ", *val)
+		//}
+		//fmt.Printf("\n")
 
 		// ready for next iteration
 		inputName2 = tm.outputName
 	}
 
-	for k, v := range output2 {
-		fmt.Printf("%s: ", k)
-		for _, val := range v {
-			fmt.Printf("%v ", *val)
-		}
-		fmt.Printf("\n")
-	}
+	//for k, v := range output2 {
+	//	fmt.Printf("%s: ", k)
+	//	for _, val := range v {
+	//		fmt.Printf("%v ", *val)
+	//	}
+	//	fmt.Printf("\n")
+	//}
 
 	answer := make([]int64, 0)
 	for _, tRange := range output2["location"] {
 		answer = append(answer, tRange.low)
 	}
 	fmt.Printf("Part 2 Answer: %d\n", slices.Min(answer))
+	t := time.Now()
+	elapsed := t.Sub(start)
+	fmt.Printf("Time: %3.8f\n", float64(elapsed)/1e3)
 }
