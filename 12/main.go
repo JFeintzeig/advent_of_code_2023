@@ -14,8 +14,8 @@ var req = regexp.MustCompile("\\?{1}")
 var reb = regexp.MustCompile("#{1}")
 
 type record struct {
-	pattern         []string
-	groups          []int
+	pattern []string
+	groups  []int
 }
 
 func CountChar(pattern string, re *regexp.Regexp) ([]int, int) {
@@ -28,12 +28,12 @@ func CountChar(pattern string, re *regexp.Regexp) ([]int, int) {
 }
 
 func GetPossible(pattern []string, groups []int) int {
-    unknownindex, nunknown := CountChar(strings.Join(pattern, ""), req)
-    _, nbrokenexisting := CountChar(strings.Join(pattern, ""), reb)
-    nbrokentotal := 0
-    for _, g := range groups {
-        nbrokentotal += g
-    }
+	unknownindex, nunknown := CountChar(strings.Join(pattern, ""), req)
+	_, nbrokenexisting := CountChar(strings.Join(pattern, ""), reb)
+	nbrokentotal := 0
+	for _, g := range groups {
+		nbrokentotal += g
+	}
 
 	// return number of strings that satisfy groups
 	count := 0
@@ -41,7 +41,7 @@ func GetPossible(pattern []string, groups []int) int {
 	for i := uint(0); i < uint(math.Pow(2, float64(nunknown))); i++ {
 		// bitmask j represents whether we're filling . (0) or # (1) in each part
 
-		if bits.OnesCount(i) + nbrokenexisting != nbrokentotal {
+		if bits.OnesCount(i)+nbrokenexisting != nbrokentotal {
 			continue
 		}
 
@@ -138,47 +138,47 @@ func LoadFile(fileName string, part int) []record {
 }
 
 func Find(r record, start int, groupNum int) int {
-    if !(groupNum < len(r.groups) && start < len(r.pattern)) {
-        return 1
-    }
-    group := r.groups[groupNum]
-    fmt.Printf("group %d=%d, start %d\n", groupNum, group, start)
-    nBadRow := 0
-    newStart := 0
-    newGroupNum := 0
-    nPossible := 0
-    // grow a subsegment of the pattern, keeping track
-    // of the number of bad unknown springs in a row
-    for j := start; j < len(r.pattern); j++ {
-        if r.pattern[j] != "." {
-            nBadRow += 1
-        } else {
-            nBadRow = 0
-        }
-        // if have enough in a row to match the group
-        if nBadRow >= group {
-            // make sure next spring is a possible end of group!
-            if (j+1 < len(r.pattern) && r.pattern[j+1] != "#") {
-                newStart = j + 2
-                newGroupNum = groupNum + 1
-                nPossible = GetPossible(r.pattern[start:newStart], []int{group})
-                fmt.Printf("%v %d %d\n", r.pattern[start:j+2], nBadRow, nPossible)
-                break
-            }
-            // or we're at the end of the pattern
-            if j+1 == len(r.pattern) {
-                newStart = j+2
-                newGroupNum = groupNum + 1
-                nPossible = GetPossible(r.pattern[start:], []int{group})
-                fmt.Printf("END: %v %d %d\n", r.pattern[start:], nBadRow, nPossible)
-                break
-            }
-        }
-    }
-    if !(newGroupNum < len(r.groups) && newStart < len(r.pattern)) {
-        return nPossible * Find(r, newStart, newGroupNum)
-    }
-    return nPossible * Find(r, newStart, newGroupNum) + Find(r, newStart, groupNum)
+	if !(groupNum < len(r.groups) && start < len(r.pattern)) {
+		return 1
+	}
+	group := r.groups[groupNum]
+	fmt.Printf("group %d=%d, start %d\n", groupNum, group, start)
+	nBadRow := 0
+	newStart := 0
+	newGroupNum := 0
+	nPossible := 0
+	// grow a subsegment of the pattern, keeping track
+	// of the number of bad unknown springs in a row
+	for j := start; j < len(r.pattern); j++ {
+		if r.pattern[j] != "." {
+			nBadRow += 1
+		} else {
+			nBadRow = 0
+		}
+		// if have enough in a row to match the group
+		if nBadRow >= group {
+			// make sure next spring is a possible end of group!
+			if j+1 < len(r.pattern) && r.pattern[j+1] != "#" {
+				newStart = j + 2
+				newGroupNum = groupNum + 1
+				nPossible = GetPossible(r.pattern[start:newStart], []int{group})
+				fmt.Printf("%v %d %d\n", r.pattern[start:j+2], nBadRow, nPossible)
+				break
+			}
+			// or we're at the end of the pattern
+			if j+1 == len(r.pattern) {
+				newStart = j + 2
+				newGroupNum = groupNum + 1
+				nPossible = GetPossible(r.pattern[start:], []int{group})
+				fmt.Printf("END: %v %d %d\n", r.pattern[start:], nBadRow, nPossible)
+				break
+			}
+		}
+	}
+	if !(newGroupNum < len(r.groups) && newStart < len(r.pattern)) {
+		return nPossible * Find(r, newStart, newGroupNum)
+	}
+	return nPossible*Find(r, newStart, newGroupNum) + Find(r, newStart, groupNum)
 }
 
 func main() {
@@ -191,28 +191,28 @@ func main() {
 	}
 	fmt.Printf("Part 1 Answer: %d\n", answer1)
 
-    // part 2
+	// part 2
 	records = LoadFile("input.data", 1)
 
-    r := records[4]
+	r := records[4]
 
-    fmt.Printf("%v\n", r)
-    s := 0
-    g := 0
-    //np := 1
-    npos := 1
-    npos = Find(r, s, g)
-    //for s < len(r.pattern) && g < len(r.groups) {
-    //    np, s, g = Find(r, s, g)
+	fmt.Printf("%v\n", r)
+	s := 0
+	g := 0
+	//np := 1
+	npos := 1
+	npos = Find(r, s, g)
+	//for s < len(r.pattern) && g < len(r.groups) {
+	//    np, s, g = Find(r, s, g)
 
-    //    // failed
-    //    if s < 0 || g < 0 {
-    //        fmt.Printf("failed\n")
-    //        break
-    //    }
-    //    npos *= np
-    //    fmt.Printf("%d\n", np)
-    //}
-    fmt.Printf("%d\n", npos)
-    fmt.Printf("true: %d\n", GetPossible(r.pattern, r.groups))
+	//    // failed
+	//    if s < 0 || g < 0 {
+	//        fmt.Printf("failed\n")
+	//        break
+	//    }
+	//    npos *= np
+	//    fmt.Printf("%d\n", np)
+	//}
+	fmt.Printf("%d\n", npos)
+	fmt.Printf("true: %d\n", GetPossible(r.pattern, r.groups))
 }
