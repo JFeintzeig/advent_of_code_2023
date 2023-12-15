@@ -1,0 +1,6 @@
+*.data
+.DS_STORE
+*.swp
+*.pyc
+*.txt
+*.o
